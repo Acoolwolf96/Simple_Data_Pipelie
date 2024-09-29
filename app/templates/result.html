@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recommendations</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+        }
+        .weather, .places, .recommendations {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .places .place, .recommendations .recommendation {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Results</h1>
+
+        <div class="weather">
+            <h2>Weather Information</h2>
+            <p><strong>City:</strong> {{ weather.city }}</p>
+            <p><strong>Temperature:</strong> {{ weather.temperature }} °C</p>
+            <p><strong>Humidity:</strong> {{ weather.humidity }}%</p>
+            <p><strong>Wind:</strong> {{ weather.wind }} m/s</p>
+            <p><strong>Pressure:</strong> {{ weather.pressure }} hPa</p>
+            <p><strong>Description:</strong> {{ weather.description }}</p>
+        </div>
+
+        <div class="places">
+            <h2>Nearby Places</h2>
+            {% if nearby_places %}
+                {% for place in nearby_places %}
+                    <div class="place">
+                        <h3>{{ place.name }}</h3>
+                        <p><strong>Rating:</strong> {{ place.rating }}</p>
+                        <p><strong>Vicinity:</strong> {{ place.vicinity }}</p>
+                        <img src="{{ place.icon }}" alt="Icon" width="50">
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No nearby places found.</p>
+            {% endif %}
+        </div>
+
+        <div class="recommendations">
+            <h2>Recommendations</h2>
+            {% if recommendations %}
+                {% for recommendation in recommendations %}
+                    <div class="recommendation">
+                        <h3>{{ recommendation.name }}</h3>
+                        <p><strong>Rating:</strong> {{ recommendation.rating }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No recommendations available.</p>
+            {% endif %}
+        </div>
+
+        <a href="/">Go back</a>
+    </div>
+</body>
+</html>
