@@ -3,4 +3,4 @@ requests
 pandas
 sqlalchemy
 Flask
-
+openai==0.28

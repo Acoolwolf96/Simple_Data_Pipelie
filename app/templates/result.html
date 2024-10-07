@@ -6,36 +6,129 @@
     <title>Recommendations</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7fa;
+            color: #333;
+            margin: 0;
+            padding: 0;
         }
+
         .container {
-            max-width: 800px;
-            margin: auto;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-        h1 {
+
+        h1, h2 {
+            text-align: center;
+            color: #34495e;
+        }
+
+        .section {
+            margin: 20px 0;
+        }
+
+        .weather, .places, .recommendations {
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #ecf0f1;
+            margin-bottom: 20px;
+        }
+
+        /* Weather Section */
+        .weather p {
+            font-size: 16px;
+            margin: 8px 0;
+        }
+
+        /* Recommendations Section */
+        .recommendations p {
+            font-size: 18px;
+            color: #2c3e50;
+        }
+
+        /* Places Section */
+        .place {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #fff;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .place:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .place h3 {
+            margin: 0;
+            color: #2980b9;
+        }
+
+        .place p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .place img {
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+        }
+
+        /* Buttons & Links */
+        a, button {
+            display: inline-block;
+            text-decoration: none;
+            color: white;
+            background-color: #3498db;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+            font-size: 14px;
+        }
+
+        a:hover, button:hover {
+            background-color: #2980b9;
+        }
+
+        .no-data {
+            color: red;
+            font-style: italic;
             text-align: center;
         }
-        .weather, .places, .recommendations {
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
-        }
-        .places .place, .recommendations .recommendation {
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .place {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .place img {
+                margin-top: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Results</h1>
+        <h1>Recommendations Based on Weather</h1>
 
-        <div class="weather">
-            <h2>Weather Information</h2>
+        <!-- Weather Information -->
+        <div class="weather section">
+            <h2>Current Weather</h2>
             <p><strong>City:</strong> {{ weather.city }}</p>
             <p><strong>Temperature:</strong> {{ weather.temperature }} °C</p>
             <p><strong>Humidity:</strong> {{ weather.humidity }}%</p>
@@ -44,37 +137,50 @@
             <p><strong>Description:</strong> {{ weather.description }}</p>
         </div>
 
-        <div class="places">
-            <h2>Nearby Places</h2>
+        <!-- Recommendations from OpenAI -->
+        <div class="recommendations section">
+            <h2>Recommended Activities</h2>
+            {% if recommendations %}
+                <p>{{ recommendations }}</p>
+            {% else %}
+                <p class="no-data">No recommendations available.</p>
+            {% endif %}
+        </div>
+        
+        <!-- Nearby Places -->
+        <div class="places section">
+            <h2>Nearby Places Matching Activities</h2>
             {% if nearby_places %}
                 {% for place in nearby_places %}
                     <div class="place">
-                        <h3>{{ place.name }}</h3>
-                        <p><strong>Rating:</strong> {{ place.rating }}</p>
-                        <p><strong>Vicinity:</strong> {{ place.vicinity }}</p>
-                        <img src="{{ place.icon }}" alt="Icon" width="50">
+                        <div class="place-details">
+                            <h3>{{ place.name }}</h3>
+                            <p><strong>Rating:</strong> {{ place.rating }}</p>
+                            <p><strong>Vicinity:</strong> {{ place.vicinity }}</p>
+
+                            <p><strong>Status:</strong> {% if place.open_now %} Open Now {% else %} Closed {% endif %}</p>
+
+                            <!-- Google Maps Link -->
+                            {% if place.location.lat and place.location.lng %}
+                                <a href="https://www.google.com/maps/search/?api=1&query={{ place.location.lat }},{{ place.location.lng }}" target="_blank">
+                                    View on Google Maps
+                                </a>
+                            {% else %}
+                                <p>Location not available</p>
+                            {% endif %}
+                        </div>
+                        <img src="{{ place.icon }}" alt="Place Icon">
                     </div>
                 {% endfor %}
             {% else %}
-                <p>No nearby places found.</p>
+                <p class="no-data">No nearby places found matching the recommended activities.</p>
             {% endif %}
         </div>
 
-        <div class="recommendations">
-            <h2>Recommendations</h2>
-            {% if recommendations %}
-                {% for recommendation in recommendations %}
-                    <div class="recommendation">
-                        <h3>{{ recommendation.name }}</h3>
-                        <p><strong>Rating:</strong> {{ recommendation.rating }}</p>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>No recommendations available.</p>
-            {% endif %}
-        </div>
 
-        <a href="/">Go back</a>
+        <div style="text-align: center;">
+            <a href="/">Go back</a>
+        </div>
     </div>
 </body>
 </html>

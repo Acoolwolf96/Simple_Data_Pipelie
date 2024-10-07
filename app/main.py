@@ -1,11 +1,16 @@
 from flask import Flask, request, render_template
-from pipeline import configure, extract, transform, load, get_weather_by_coords, collaborative_filtering, get_nearby_place_by_city, get_nearby_places_by_coords
-from connection import create_table, connect
-from collections import defaultdict
+from pipeline import (
+    configure, extract, transform, load, 
+    get_weather_by_coords, get_nearby_place_by_city, 
+    get_nearby_places_by_coords, get_nearby_places, 
+    openai_activities_suggestions, map_recommendation_to_types
+)
+from connection import create_table, connect, create_cache_table
 
 app = Flask(__name__)
 connect()
 create_table()  
+create_cache_table()
 
 @app.route('/', methods=['GET', 'POST'])
 def pipeline():
@@ -17,41 +22,65 @@ def pipeline():
 
         weather_data = None
         nearby_places = []
-        recommendations = []
+        ai_recommendations = None
+        filtered_nearby_places = []
 
-        # Handle the case where the city is provided
+        # 1. Get weather data and nearby places by city or coordinates
         if city:
             weather_data = extract(city)
-            nearby_places = get_nearby_place_by_city(city)
-        
-        # Handle the case where latitude and longitude are provided
+            if weather_data:
+                # 2a. Transform and load weather data into the database
+                transform_data = transform(weather_data)
+                if transform_data:
+                    load(transform_data)
+
+                    # 2b. Get activity recommendations from OpenAI based on weather
+                    ai_recommendations = openai_activities_suggestions(weather_data)
+                    
+                    # 2c. Map OpenAI activity suggestions to place types
+                    if ai_recommendations:
+                        place_types = map_recommendation_to_types(ai_recommendations)
+
+                        # 2d. Fetch nearby places based on OpenAI recommendations
+                        if place_types:
+                            recommendation_string = ', '.join(place_types)
+                            nearby_places = get_nearby_place_by_city(city, recommendation_string)  # No recommendations yet, just get city coordinates
+                        
+
+            return render_template('result.html', weather=weather_data, nearby_places=nearby_places, recommendations=ai_recommendations)
+            
         elif latitude and longitude:
             weather_data = get_weather_by_coords(latitude, longitude)
             nearby_places = get_nearby_places_by_coords(latitude, longitude)
 
-        # Check if weather data was successfully fetched
-        if weather_data:
-            transform_data = transform(weather_data)
-            if transform_data:
-                load(transform_data)
+            # 2. If weather data is available, process further
+            if weather_data:
+                # 2a. Transform and load weather data into the database
+                transform_data = transform(weather_data)
+                if transform_data:
+                    load(transform_data)
 
-        # Generate recommendations if there are nearby places
-        if nearby_places:
-            recommendations = collaborative_filtering(nearby_places)
-        
-        # Log for debugging purposes
-        print(f'Weather Data: {weather_data}')
-        print(f'Nearby Places: {nearby_places}')
-        print(f'Recommendations: {recommendations}')
+                    # 2b. Get activity recommendations from OpenAI based on weather
+                    ai_recommendations = openai_activities_suggestions(weather_data)
+                    
+                    # 2c. Map OpenAI activity suggestions to place types
+                    if ai_recommendations:
+                        place_types = map_recommendation_to_types(ai_recommendations)
 
-        # Return the result page with all data
-        return render_template('result.html', weather=weather_data, nearby_places=nearby_places, recommendations=recommendations)
-    
+                        # 2d. Fetch nearby places based on OpenAI recommendations
+                        if place_types:
+                            recommendation_string = ', '.join(place_types)
+                            filtered_nearby_places = get_nearby_places(f"{latitude},{longitude}", recommendations=recommendation_string)
+                        else:
+                            # Fallback to default nearby places if no place types are matched
+                            filtered_nearby_places = nearby_places
+                    else:
+                        # Fallback to default nearby places if no AI recommendations
+                        filtered_nearby_places = nearby_places
+
+            return render_template('result.html', weather=weather_data, nearby_places=filtered_nearby_places, recommendations=ai_recommendations)
+
     return render_template('index.html')
-
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
-
-    

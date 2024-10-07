@@ -57,13 +57,13 @@ def create_table():
         else:
             print("Table 'weather_data' does not exist.")
 
-        # Fetch data from the table (if any)
-        crsr.execute("SELECT * FROM weather_data")
-        rows = crsr.fetchall()  # Fetch the data
-        if rows:
-            print("Weather data:", rows)
-        else:
-            print("No data found in the 'weather_data' table.")
+        # # Fetch data from the table (if any)
+        # crsr.execute("SELECT * FROM weather_data")
+        # rows = crsr.fetchall()  # Fetch the data
+        # if rows:
+        #     print("Weather data:", rows)
+        # else:
+        #     print("No data found in the 'weather_data' table.")
 
     except (Exception, psycopg2.DatabaseError) as error:
         print(f'Error while creating table\n{error}')
@@ -72,3 +72,33 @@ def create_table():
         if connection is not None:
             connection.close()
             print('Database connection is closed.')
+
+
+def create_cache_table():
+    connection = None
+    try:
+        params = config()
+        print("Connecting to Database...")
+        connection = psycopg2.connect(**params)
+        crsr = connection.cursor()
+
+        create_table_query = """
+        CREATE TABLE IF NOT EXISTS geocoding_cache (
+            city VARCHAR(255) PRIMARY KEY,
+            lat DOUBLE PRECISION,
+            lng DOUBLE PRECISION,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """
+        crsr.execute(create_table_query)
+        connection.commit()
+        print("Geocoding cache table has been created!")
+
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(f'Error while creating geocoding cache table\n{error}')
+
+    finally:
+        if connection is not None:
+            connection.close()
+            print('Database connection is closed.')
+
