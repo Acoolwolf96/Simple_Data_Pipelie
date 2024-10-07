@@ -5,7 +5,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Copy the requirements file to the working directory
-COPY app/requirements.txt .
+COPY app/requirements.txt ./
 
 # Install any dependencies
 RUN pip install --no-cache-dir -r requirements.txt
@@ -17,4 +17,4 @@ COPY app /app
 EXPOSE 8000
 
 # Command to run the Flask app
-CMD ["python", "main.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080" "main:app"]
