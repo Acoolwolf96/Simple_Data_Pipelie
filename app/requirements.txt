@@ -4,3 +4,4 @@ pandas
 sqlalchemy
 Flask
 openai==0.28
+gunicorn==22.0.0
