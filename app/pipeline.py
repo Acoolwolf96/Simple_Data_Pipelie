@@ -141,7 +141,8 @@ def get_nearby_places(location, recommendations, radius=1500):
     
     places = []
     for place_type in types:
-        url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={latitude},{longitude}&radius={radius}&type={place_type}&key={os.getenv("google_api")}"
+        url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={latitude},{longitude}&radius={radius}&type={place_type}&key={os.getenv('google_api')}"
+
         response = requests.get(url)
         data = response.json()
         
