@@ -98,7 +98,8 @@ def load(weather):
 def get_weather_by_coords(latitude, longitude):
      #Extracting lats and lon
     print(f'Extracting data for: {latitude}, {longitude}')
-    url = f"http://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={os.getenv("API_KEY")}&units=metric"
+    url = f"http://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={os.getenv('API_KEY')}&units=metric"
+
     try:
         #send GET request to the API
         response = requests.get(url)
