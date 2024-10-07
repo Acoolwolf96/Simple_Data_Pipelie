@@ -13,14 +13,15 @@ cache = {}
 
 def configure():
     load_dotenv()
-    openai.api_key = os.getenv('openai_api_key')
+    openai.api_key = os.getenv("openai_api_key")
 
 
 def extract(city):
     #Extract city data
     print(f'Extracting data for: {city}')
 
-    url = f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={os.getenv('API_KEY')}&units=metric'
+    url = f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={os.getenv("API_KEY")}&units=metric'
+
 
     try:
         #send GET request to the API
@@ -97,7 +98,7 @@ def load(weather):
 def get_weather_by_coords(latitude, longitude):
      #Extracting lats and lon
     print(f'Extracting data for: {latitude}, {longitude}')
-    url = f"http://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={os.getenv('API_KEY')}&units=metric"
+    url = f"http://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={os.getenv("API_KEY")}&units=metric"
     try:
         #send GET request to the API
         response = requests.get(url)
@@ -139,7 +140,7 @@ def get_nearby_places(location, recommendations, radius=1500):
     
     places = []
     for place_type in types:
-        url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={latitude},{longitude}&radius={radius}&type={place_type}&key={os.getenv('google_api')}"
+        url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={latitude},{longitude}&radius={radius}&type={place_type}&key={os.getenv("google_api")}"
         response = requests.get(url)
         data = response.json()
         
