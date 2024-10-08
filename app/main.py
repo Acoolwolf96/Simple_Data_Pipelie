@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-from pipeline import (
+from app.pipeline import (
     configure, extract, transform, load, 
     get_weather_by_coords, get_nearby_place_by_city, 
     get_nearby_places_by_coords, get_nearby_places, 
