@@ -1,7 +1,7 @@
 import openai.error
 import psycopg2
 import requests
-from config import config
+from config import config, config_render
 from dotenv import load_dotenv
 import os
 import openai
@@ -14,6 +14,21 @@ cache = {}
 def configure():
     load_dotenv()
     openai.api_key = os.getenv("openai_api_key")
+
+def get_database_config():
+
+    database_url = os.getenv('DATABASE_URL')
+
+    if database_url:
+        # Use config_render if DATABASE_URL is set (server/hosting environment)
+        print("Using config_render() for database configuration.")
+        return config_render()
+    else:
+        # Use config if DATABASE_URL is not set (local environment)
+        print("Using config() for database configuration.")
+        return config()
+
+
 
 
 def extract(city):
@@ -70,7 +85,7 @@ def load(weather):
     connection = None
     try:
         #connect to database   
-        params = config()
+        params = get_database_config()
         connection = psycopg2.connect(**params)
         crsr = connection.cursor()
 
@@ -224,7 +239,7 @@ def get_geocoding_nominatim(city):
     """Get geocoding data from Nominatim or cache."""
     try:
         # Connect to the database
-        params = config()
+        params = get_database_config()
         with psycopg2.connect(**params) as connection:
             with connection.cursor() as crsr:
                 # Check if the city is in the cache
