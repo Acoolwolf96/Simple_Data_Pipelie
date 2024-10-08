@@ -146,7 +146,7 @@ def get_nearby_places(location, recommendations, radius=1500):
     print(f'location from: {location}, recommendations: {recommendations}')
     
     latitude,longitude = location.split(',')
-    print(f'latitude:{latitude}longitude:{longitude}')
+    print(f'latitude:{latitude} longitude:{longitude}')
     
     types = map_recommendation_to_types(recommendations)
     
@@ -160,6 +160,7 @@ def get_nearby_places(location, recommendations, radius=1500):
 
         response = requests.get(url)
         data = response.json()
+        print(f'Data found: {data}')
         
         if response.status_code != 200:
             print(f"API request failed for type {place_type}: {data.get('error_message', 'Unknown error')}")

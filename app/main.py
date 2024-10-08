@@ -40,11 +40,14 @@ def pipeline():
                     # 2c. Map OpenAI activity suggestions to place types
                     if ai_recommendations:
                         place_types = map_recommendation_to_types(ai_recommendations)
+                        print(f'Place Types are : {place_types}') # debuging
 
                         # 2d. Fetch nearby places based on OpenAI recommendations
                         if place_types:
                             recommendation_string = ', '.join(place_types)
+                            print(f'Recommendation String: {recommendation_string}') #Debug
                             nearby_places = get_nearby_place_by_city(city, recommendation_string)  # No recommendations yet, just get city coordinates
+                            print(f'This is city:{city}, and RECOMMENDATION: {nearby_places}')
                         
 
             return render_template('result.html', weather=weather_data, nearby_places=nearby_places, recommendations=ai_recommendations)
