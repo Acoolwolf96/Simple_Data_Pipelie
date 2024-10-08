@@ -160,6 +160,7 @@ def get_nearby_places(location, recommendations, radius=1500):
 
         response = requests.get(url)
         data = response.json()
+        print(f'DATA for: {data}')
         
         
         if response.status_code != 200:
