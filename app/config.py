@@ -32,10 +32,9 @@ def config_render():
     # Use urlparse to break down the URL
     url = urlparse.urlparse(database_url)
     
-    # Construct parameters dictionary
     db_config = {
         'host': url.hostname,
-        'database': url.path[1:],  # Remove the leading '/'
+        'database': url.path[1:],  
         'port': url.port,
         'user': url.username,
         'password': url.password
