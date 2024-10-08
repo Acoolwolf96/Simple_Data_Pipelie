@@ -236,74 +236,74 @@ def get_nearby_places(location, recommendations, radius=1500):
 
 
 
-def get_geocoding_nominatim(city):
-    """Get geocoding data from Nominatim or cache."""
-    try:
-        # Connect to the database
-        params = get_database_config()
-        with psycopg2.connect(**params) as connection:
-            with connection.cursor() as crsr:
-                # Check if the city is in the cache
-                crsr.execute("SELECT lat, lng FROM geocoding_cache WHERE city = %s;", (city,))
-                result = crsr.fetchone()
+# def get_geocoding_nominatim(city):
+#     """Get geocoding data from Nominatim or cache."""
+#     try:
+#         # Connect to the database
+#         params = get_database_config()
+#         with psycopg2.connect(**params) as connection:
+#             with connection.cursor() as crsr:
+#                 # Check if the city is in the cache
+#                 crsr.execute("SELECT lat, lng FROM geocoding_cache WHERE city = %s;", (city,))
+#                 result = crsr.fetchone()
 
-                if result:
-                    print(f"Returning cached data for {city}: {result}")
-                    return {"lat": result[0], "lng": result[1]}
+#                 if result:
+#                     print(f"Returning cached data for {city}: {result}")
+#                     return {"lat": result[0], "lng": result[1]}
     
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(f'Error connecting to the database: {error}')
+#     except (Exception, psycopg2.DatabaseError) as error:
+#         print(f'Error connecting to the database: {error}')
 
-    # If not found in cache, make a request to Nominatim
-    url = f"https://nominatim.openstreetmap.org/search?q={city}&format=json&limit=1"
+#     # If not found in cache, make a request to Nominatim
+#     url = f"https://nominatim.openstreetmap.org/search?q={city}&format=json&limit=1"
  
     
-    print(f"Geocoding request URL: {url}")  # Debugging the URL
+#     print(f"Geocoding request URL: {url}")  # Debugging the URL
 
-    try:
-        response = requests.get(url)
+#     try:
+#         response = requests.get(url)
 
-        if response.status_code == 200:
-            results = response.json()
-            print(f"Nominatim API response: {results}")  # Debugging the response
+#         if response.status_code == 200:
+#             results = response.json()
+#             print(f"Nominatim API response: {results}")  # Debugging the response
             
-            if results:
-                location = {
-                    "lat": float(results[0]["lat"]),
-                    "lng": float(results[0]["lon"])
-                }
+#             if results:
+#                 location = {
+#                     "lat": float(results[0]["lat"]),
+#                     "lng": float(results[0]["lon"])
+#                 }
 
-                # Cache the result in the database
-                with psycopg2.connect(**params) as connection:
-                    with connection.cursor() as crsr:
-                        crsr.execute(
-                            "INSERT INTO geocoding_cache (city, lat, lng) VALUES (%s, %s, %s) "
-                            "ON CONFLICT (city) DO UPDATE SET lat = %s, lng = %s;",
-                            (city, location['lat'], location['lng'], location['lat'], location['lng'])
-                        )
-                        connection.commit()
+#                 # Cache the result in the database
+#                 with psycopg2.connect(**params) as connection:
+#                     with connection.cursor() as crsr:
+#                         crsr.execute(
+#                             "INSERT INTO geocoding_cache (city, lat, lng) VALUES (%s, %s, %s) "
+#                             "ON CONFLICT (city) DO UPDATE SET lat = %s, lng = %s;",
+#                             (city, location['lat'], location['lng'], location['lat'], location['lng'])
+#                         )
+#                         connection.commit()
 
-                print(f"Cached new data for {city}: {location}")  # Debugging the cached location
-                return location
+#                 print(f"Cached new data for {city}: {location}")  # Debugging the cached location
+#                 return location
 
-        # Handle specific response codes
-        if response.status_code == 403:
-            print(f"Access denied to Nominatim API for {city}. Please check usage policy.")
-        elif response.status_code == 429:
-            print(f"Rate limit exceeded for Nominatim API for {city}.")
-        else:
-            print(f"Failed to retrieve data for {city}, Status code: {response.status_code}, Reason: {response.text}")
+#         # Handle specific response codes
+#         if response.status_code == 403:
+#             print(f"Access denied to Nominatim API for {city}. Please check usage policy.")
+#         elif response.status_code == 429:
+#             print(f"Rate limit exceeded for Nominatim API for {city}.")
+#         else:
+#             print(f"Failed to retrieve data for {city}, Status code: {response.status_code}, Reason: {response.text}")
 
-    except Exception as error:
-        print(f"Error fetching geocoding data for {city}: {error}")
+#     except Exception as error:
+#         print(f"Error fetching geocoding data for {city}: {error}")
 
-    return None
+#     return None
 
 
 
 
 def get_nearby_place_by_city(city, recommendations):
-    location_data = get_geocoding_nominatim(city)
+    location_data = get_geocoding_opencage(city)
     if location_data:
         latitude = location_data['lat']
         longitude = location_data['lng']
@@ -400,3 +400,67 @@ def map_recommendation_to_types(recommendations):
 
     return matched_types
 
+
+def get_geocoding_opencage(city):
+    """Get geocoding data from OpenCage or cache."""
+
+    api_key = os.getenv('opencage_api')
+    try:
+        # Connect to the database
+        params = get_database_config()
+        with psycopg2.connect(**params) as connection:
+            with connection.cursor() as crsr:
+                # Check if the city is in the cache
+                crsr.execute("SELECT lat, lng FROM geocoding_cache WHERE city = %s;", (city,))
+                result = crsr.fetchone()
+
+                if result:
+                    print(f"Returning cached data for {city}: {result}")
+                    return {"lat": result[0], "lng": result[1]}
+    
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(f'Error connecting to the database: {error}')
+
+    # If not found in cache, make a request to OpenCage
+    url = f'https://api.opencagedata.com/geocode/v1/json?q={city}&key={api_key}'
+    
+    print(f"Geocoding request URL: {url}")  # Debugging the URL
+
+    try:
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            results = response.json()
+            print(f"OpenCage API response: {results}")  # Debugging the response
+            
+            if results['results']:
+                location = {
+                    "lat": float(results['results'][0]['geometry']['lat']),
+                    "lng": float(results['results'][0]['geometry']['lng'])
+                }
+
+                # Cache the result in the database
+                with psycopg2.connect(**params) as connection:
+                    with connection.cursor() as crsr:
+                        crsr.execute(
+                            "INSERT INTO geocoding_cache (city, lat, lng) VALUES (%s, %s, %s) "
+                            "ON CONFLICT (city) DO UPDATE SET lat = %s, lng = %s;",
+                            (city, location['lat'], location['lng'], location['lat'], location['lng'])
+                        )
+                        connection.commit()
+
+                print(f"Cached new data for {city}: {location}")  # Debugging the cached location
+                return location
+
+        # Handle specific response codes
+        if response.status_code == 403:
+            print(f"Access denied to OpenCage API for {city}. Please check usage policy.")
+        elif response.status_code == 429:
+            print(f"Rate limit exceeded for OpenCage API for {city}.")
+        else:
+            print(f"Failed to retrieve data for {city}, Status code: {response.status_code}, Reason: {response.text}")
+
+    except Exception as error:
+        print(f"Error fetching geocoding data for {city}: {error}")
+
+    return None
