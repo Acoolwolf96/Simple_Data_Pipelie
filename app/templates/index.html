@@ -142,22 +142,13 @@
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(showPosition, showError, {
                     enableHighAccuracy: true,
-                    timeout: 5000,
+                    timeout: 10000,  // Increased timeout to 10 seconds
                     maximumAge: 0,
                 });
             } else {
                 loadingSpinner.style.display = 'none';
                 errorMessage.textContent = "Geolocation is not supported by this browser.";
             }
-        }
-
-        function showPosition(position) {
-            // Get latitude and longitude from user's device
-            document.getElementById('latitude').value = position.coords.latitude;
-            document.getElementById('longitude').value = position.coords.longitude;
-
-            // Automatically submit the form to the server
-            document.getElementById('locationForm').submit();
         }
 
         function showError(error) {
@@ -168,19 +159,20 @@
 
             switch (error.code) {
                 case error.PERMISSION_DENIED:
-                    errorMessage.textContent = "User denied the request for Geolocation.";
+                    errorMessage.textContent = "User denied the request. Please enable it in your browser settings.";
                     break;
                 case error.POSITION_UNAVAILABLE:
                     errorMessage.textContent = "Location information is unavailable.";
                     break;
                 case error.TIMEOUT:
-                    errorMessage.textContent = "The request to get user location timed out.";
+                    errorMessage.textContent = "The request to get user location timed out. Please try again.";
                     break;
                 case error.UNKNOWN_ERROR:
                     errorMessage.textContent = "An unknown error occurred.";
                     break;
             }
         }
+
     </script>
 </body>
 </html>
