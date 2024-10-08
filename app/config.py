@@ -1,5 +1,6 @@
 from configparser import ConfigParser
 import os
+import urllib.parse as urlparse
 
 
 def config(filename="database.ini", section="postgresql"):
@@ -21,12 +22,29 @@ def config(filename="database.ini", section="postgresql"):
     return db    
 
 def config_render():
-    db = {
-        'host': os.getenv('DB_HOST'),
-        'database': os.getenv('DB_NAME'),
-        'port': os.getenv('DB_PORT'),
-        'user': os.getenv('DB_USER'),
-        'password': os.getenv('DB_PASSWORD')
+    # Get the DATABASE_URL environment variable
+    database_url = os.getenv('DATABASE_URL')
+    
+    # Parse the URL into components
+    if not database_url:
+        raise ValueError("DATABASE_URL environment variable is not set")
+    
+    # Use urlparse to break down the URL
+    url = urlparse.urlparse(database_url)
+    
+    # Construct parameters dictionary
+    db_config = {
+        'host': url.hostname,
+        'database': url.path[1:],  # Remove the leading '/'
+        'port': url.port,
+        'user': url.username,
+        'password': url.password
     }
-    return db
+
+    # Print out the configuration for debugging
+    print("Database configuration from DATABASE_URL:")
+    for key, value in db_config.items():
+        print(f"{key}: {value}")
+
+    return db_config
 
