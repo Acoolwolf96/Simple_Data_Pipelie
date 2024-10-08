@@ -1,4 +1,5 @@
 from configparser import ConfigParser
+import os
 
 
 def config(filename="database.ini", section="postgresql"):
@@ -19,4 +20,13 @@ def config(filename="database.ini", section="postgresql"):
         )    
     return db    
 
+def config_render():
+    db = {
+        'host': os.getenv('DB_HOST'),
+        'database': os.getenv('DB_NAME'),
+        'port': os.getenv('DB_PORT'),
+        'user': os.getenv('DB_USER'),
+        'password': os.getenv('DB_PASSWORD')
+    }
+    return db
 

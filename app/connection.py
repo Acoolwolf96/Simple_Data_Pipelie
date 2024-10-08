@@ -1,37 +1,65 @@
 import time
 import psycopg2
-from config import config
+from config import config, config_render
 
 def connect():
     connection = None
     retries = 5
     while retries > 0:
         try:
+            # Try to connect using database.ini
             params = config()
-            print('Connecting to database...')
+            print('Connecting to database using database.ini...')
             connection = psycopg2.connect(**params)
             crsr = connection.cursor()
             crsr.execute('SELECT version()')
             db_version = crsr.fetchone()
             print(f"Database version: {db_version}")
             crsr.close()
-            break 
+            break  # Exit loop on success
+
         except (Exception, psycopg2.DatabaseError) as error:
-            print(f"Error connecting to database: {error}")
+            print(f"Error connecting to database using database.ini: {error}")
             retries -= 1
             print(f"Retrying... ({retries} retries left)")
             time.sleep(5)
+
+            if retries == 0:  # After retries, attempt Render connection
+                print("Falling back to environment variables (Render)...")
+                try:
+                    params = config_render()
+                    connection = psycopg2.connect(**params)
+                    crsr = connection.cursor()
+                    crsr.execute('SELECT version()')
+                    db_version = crsr.fetchone()
+                    print(f"Database version (Render): {db_version}")
+                    crsr.close()
+                    break  # Exit loop on success
+                except (Exception, psycopg2.DatabaseError) as render_error:
+                    print(f"Error connecting using Render environment variables: {render_error}")
+                    time.sleep(5)
+                    break  # No further retries if both failed
+
         finally:
-            if connection is not None: 
+            if connection is not None:
                 connection.close()
                 print('Database Connection Terminated!')
+
 
 def create_table():
     connection = None
     try:
-        params = config()
-        print("Connecting to Database...")
-        connection = psycopg2.connect(**params)
+        try:
+            # Try to connect using database.ini
+            params = config()
+            print("Connecting to Database using database.ini...")
+            connection = psycopg2.connect(**params)
+        except (Exception, psycopg2.DatabaseError) as ini_error:
+            print(f"Error using database.ini: {ini_error}")
+            print("Falling back to Render environment variables...")
+            params = config_render()
+            connection = psycopg2.connect(**params)
+
         crsr = connection.cursor()
 
         create_table_query = """
@@ -57,14 +85,6 @@ def create_table():
         else:
             print("Table 'weather_data' does not exist.")
 
-        # # Fetch data from the table (if any)
-        # crsr.execute("SELECT * FROM weather_data")
-        # rows = crsr.fetchall()  # Fetch the data
-        # if rows:
-        #     print("Weather data:", rows)
-        # else:
-        #     print("No data found in the 'weather_data' table.")
-
     except (Exception, psycopg2.DatabaseError) as error:
         print(f'Error while creating table\n{error}')
 
@@ -74,12 +94,21 @@ def create_table():
             print('Database connection is closed.')
 
 
+
 def create_cache_table():
     connection = None
     try:
-        params = config()
-        print("Connecting to Database...")
-        connection = psycopg2.connect(**params)
+        try:
+            # Try to connect using database.ini
+            params = config()
+            print("Connecting to Database using database.ini...")
+            connection = psycopg2.connect(**params)
+        except (Exception, psycopg2.DatabaseError) as ini_error:
+            print(f"Error using database.ini: {ini_error}")
+            print("Falling back to Render environment variables...")
+            params = config_render()
+            connection = psycopg2.connect(**params)
+
         crsr = connection.cursor()
 
         create_table_query = """
@@ -101,4 +130,5 @@ def create_cache_table():
         if connection is not None:
             connection.close()
             print('Database connection is closed.')
+
 
