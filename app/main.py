@@ -5,7 +5,7 @@ from app.pipeline import (
     get_nearby_places_by_coords, get_nearby_places, 
     openai_activities_suggestions, map_recommendation_to_types
 )
-from connection import create_table, connect, create_cache_table
+from app.connection import create_table, connect, create_cache_table
 
 app = Flask(__name__)
 connect()

@@ -1,7 +1,7 @@
 import openai.error
 import psycopg2
 import requests
-from config import config, config_render
+from app.config import config, config_render
 from dotenv import load_dotenv
 import os
 import openai

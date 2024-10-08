@@ -1,6 +1,6 @@
 import time
 import psycopg2
-from config import config, config_render
+from app.config import config, config_render
 
 def connect():
     connection = None
