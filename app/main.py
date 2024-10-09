@@ -1,4 +1,7 @@
 from flask import Flask, request, render_template
+import os
+from dotenv import load_dotenv
+from datetime import datetime
 from app.pipeline import (
     configure, extract, transform, load, 
     get_weather_by_coords, get_nearby_place_by_city, 
@@ -11,14 +14,28 @@ app = Flask(__name__)
 connect()
 create_table()  
 create_cache_table()
+load_dotenv()
+
+from datetime import datetime
 
 @app.route('/', methods=['GET', 'POST'])
 def pipeline():
     configure()
+    google_api_key = os.getenv("google_api") #loadiing google api for auto-complete
     if request.method == 'POST':
         city = request.form.get('city')
         latitude = request.form.get('latitude')
         longitude = request.form.get('longitude')
+
+        checkin = request.form.get('checkin')
+        checkout = request.form.get('checkout')
+
+        # Calculate the number of days the user is staying
+        stay_duration = None
+        if checkin and checkout:
+            checkin_date = datetime.strptime(checkin, "%Y-%m-%d")
+            checkout_date = datetime.strptime(checkout, "%Y-%m-%d")
+            stay_duration = (checkout_date - checkin_date).days
 
         weather_data = None
         nearby_places = []
@@ -29,64 +46,46 @@ def pipeline():
         if city:
             weather_data = extract(city)
             if weather_data:
-                # 2a. Transform and load weather data into the database
                 transform_data = transform(weather_data)
                 if transform_data:
                     load(transform_data)
 
-                    # 2b. Get activity recommendations from OpenAI based on weather
-                    ai_recommendations = openai_activities_suggestions(weather_data)
+                    # Pass the stay duration to OpenAI activity suggestions
+                    ai_recommendations = openai_activities_suggestions(weather_data, stay_duration)
                     
-                    # 2c. Map OpenAI activity suggestions to place types
+                    # Map OpenAI activity suggestions to place types
                     if ai_recommendations:
                         place_types = map_recommendation_to_types(ai_recommendations)
-                        print(f'Place Types are : {place_types}')  # Debugging
-
-                        # 2d. Fetch nearby places based on OpenAI recommendations
                         if place_types:
                             recommendation_string = ', '.join(place_types)
-                            # print(f'Recommendation String: {recommendation_string}')  # Debug
-                            nearby_places = get_nearby_place_by_city(city, recommendation_string)  # No recommendations yet, just get city coordinates
-                            #print(f'This is city:{city}, and RECOMMENDATION: {nearby_places}')  # Debugging
+                            nearby_places = get_nearby_place_by_city(city, recommendation_string)
 
-            # print(f"Weather Data: {weather_data}")  # Debugging output
-            # print(f"Nearby Places: {nearby_places}")  # Debugging output
-            # print(f"Recommendations: {ai_recommendations}")  # Debugging output
+            return render_template('result.html', weather=weather_data, nearby_places=nearby_places, recommendations=ai_recommendations, stay_duration=stay_duration)
 
-            return render_template('result.html', weather=weather_data, nearby_places=nearby_places, recommendations=ai_recommendations)
-            
         elif latitude and longitude:
             weather_data = get_weather_by_coords(latitude, longitude)
             nearby_places = get_nearby_places_by_coords(latitude, longitude)
 
-            # 2. If weather data is available, process further
             if weather_data:
-                # 2a. Transform and load weather data into the database
                 transform_data = transform(weather_data)
                 if transform_data:
                     load(transform_data)
 
-                    # 2b. Get activity recommendations from OpenAI based on weather
-                    ai_recommendations = openai_activities_suggestions(weather_data)
-                    
-                    # 2c. Map OpenAI activity suggestions to place types
+                    ai_recommendations = openai_activities_suggestions(weather_data, stay_duration)
+
                     if ai_recommendations:
                         place_types = map_recommendation_to_types(ai_recommendations)
-
-                        # 2d. Fetch nearby places based on OpenAI recommendations
                         if place_types:
                             recommendation_string = ', '.join(place_types)
                             filtered_nearby_places = get_nearby_places(f"{latitude},{longitude}", recommendations=recommendation_string)
                         else:
-                            # Fallback to default nearby places if no place types are matched
                             filtered_nearby_places = nearby_places
                     else:
-                        # Fallback to default nearby places if no AI recommendations
                         filtered_nearby_places = nearby_places
 
-            return render_template('result.html', weather=weather_data, nearby_places=filtered_nearby_places, recommendations=ai_recommendations)
+            return render_template('result.html', weather=weather_data, nearby_places=filtered_nearby_places, recommendations=ai_recommendations, stay_duration=stay_duration)
 
-    return render_template('index.html')
+    return render_template('index.html', google_api_key= google_api_key)
 
 
 if __name__ == "__main__":

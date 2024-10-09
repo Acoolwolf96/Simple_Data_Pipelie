@@ -7,7 +7,8 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7fa;
+            background: url('https://source.unsplash.com/random/1920x1080/?nature') no-repeat center center fixed; /* Background image */
+            background-size: cover; 
             color: #333;
             margin: 0;
             padding: 0;
@@ -17,9 +18,9 @@
             max-width: 900px;
             margin: 20px auto;
             padding: 20px;
-            background-color: #fff;
+            background-color: rgba(255, 255, 255, 0.9); 
             border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
         h1, h2 {
@@ -36,6 +37,20 @@
             border-radius: 8px;
             background-color: #ecf0f1;
             margin-bottom: 20px;
+            position: relative; /* For image positioning */
+        }
+
+        /* Adding decorative images */
+        .weather:before, .recommendations:before, .places:before {
+            content: '';
+            background: url('https://source.unsplash.com/random/100x100/?weather') no-repeat center;
+            background-size: contain;
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            top: 10px;
+            right: 10px;
+            opacity: 0.8;
         }
 
         /* Weather Section */
@@ -44,10 +59,22 @@
             margin: 8px 0;
         }
 
+        .recommendations {
+            padding: 20px; 
+            border-radius: 8px;
+            background-color: #ecf0f1;
+            margin-bottom: 30px; 
+            position: relative; 
+            font-size: 18px; 
+            width: auto;
+            min-height: 100px;
+        }
+
         /* Recommendations Section */
         .recommendations p {
-            font-size: 18px;
+            font-size: 16px;
             color: #2c3e50;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
 
         /* Places Section */
@@ -64,7 +91,7 @@
 
         .place:hover {
             transform: scale(1.02);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .place h3 {
@@ -78,9 +105,10 @@
         }
 
         .place img {
-            width: 50px;
-            height: 50px;
+            width: 70px; /* Increased size for better visibility */
+            height: 70px; /* Increased size for better visibility */
             border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Added shadow */
         }
 
         /* Buttons & Links */
@@ -91,12 +119,14 @@
             background-color: #3498db;
             padding: 10px 20px;
             border-radius: 5px;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform 0.2s;
             font-size: 14px;
+            margin-top: 10px; /* Added space between button and other elements */
         }
 
         a:hover, button:hover {
             background-color: #2980b9;
+            transform: translateY(-2px); /* Slight lift on hover */
         }
 
         .no-data {
@@ -161,7 +191,7 @@
                             <p><strong>Status:</strong> {% if place.open_now %} Open Now {% else %} Closed {% endif %}</p>
 
                             <!-- Google Maps Link -->
-                            {% if place.location.lat and place.location.lng %}
+                            {% if place.location is defined and place.location.lat is defined and place.location.lng is defined %}
                                 <a href="https://www.google.com/maps/search/?api=1&query={{ place.location.lat }},{{ place.location.lng }}" target="_blank">
                                     View on Google Maps
                                 </a>
@@ -176,7 +206,6 @@
                 <p class="no-data">No nearby places found matching the recommended activities.</p>
             {% endif %}
         </div>
-
 
         <div style="text-align: center;">
             <a href="/">Go back</a>

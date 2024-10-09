@@ -4,63 +4,86 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather and Activity Recommendation</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Include Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- Custom CSS -->
     <style>
         body {
             font-family: 'Arial', sans-serif;
             background: linear-gradient(135deg, #67B26F 10%, #4ca2cd 100%);
-            margin: 0;
-            padding: 0;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .header {
+            background: url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&q=80&w=1920') no-repeat center center;
+            height: 300px;
+            background-size: cover;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
         }
+
+        .header h1 {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #fff;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+            font-size: 2.5em;
+        }
+
         .container {
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.9);
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-            max-width: 500px;
-            width: 90%; /* Ensures it scales down on mobile */
-            text-align: center;
+            max-width: 600px;
+            margin: -100px auto 0; 
+            z-index: 1; 
+            position: relative;
         }
+
         h1 {
-            font-size: 1.8em;
             color: #333;
-            margin-bottom: 20px;
         }
+
         label {
-            font-size: 1em;
-            color: #666;
+            color: #333; 
         }
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0 20px;
+
+        input[type="text"], input[type="date"] {
+            background-color: #fff; 
+            color: #333; 
             border-radius: 5px;
             border: 1px solid #ddd;
             font-size: 1em;
         }
+
         button {
-            padding: 12px 20px;
-            margin: 10px;
-            border: none;
-            border-radius: 25px;
             background-color: #4ca2cd;
             color: white;
             font-size: 1em;
             cursor: pointer;
             transition: background-color 0.3s ease;
-            width: 100%; /* Full-width buttons on mobile */
         }
+
         button:hover {
             background-color: #67B26F;
         }
-        #locationForm {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+
+        .btn-container {
+            display: flex; 
+            justify-content: space-between; 
+            margin-top: 20px;
         }
+
         .loading-spinner {
             display: none;
             border: 6px solid #f3f3f3;
@@ -71,71 +94,120 @@
             animation: spin 1s linear infinite;
             margin-top: 20px;
         }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
         .message {
             margin-top: 20px;
             font-size: 0.9em;
             color: #ff0000;
         }
 
-        /* Media Queries for Mobile */
+        
         @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
             h1 {
                 font-size: 1.5em;
-            }
-            input[type="text"] {
-                font-size: 1.1em;
-            }
-            button {
-                font-size: 1.1em;
-                padding: 14px 24px;
             }
         }
 
         @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
             h1 {
                 font-size: 1.3em;
             }
-            input[type="text"] {
-                font-size: 1.2em;
-            }
-            button {
-                font-size: 1.2em;
-                padding: 16px 28px;
-            }
-            .container {
-                padding: 20px;
-            }
+        }
+        .background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&q=80&w=1920') repeat;
+            z-index: -1; 
+            opacity: 0.1; 
         }
     </style>
 </head>
 <body>
+    <div class="background-overlay"></div>
+
+    <div class="header">
+        <h1>Discover Your Next Adventure</h1>
+    </div>
+
     <div class="container">
-        <h1>Find Recommendations Based on Location!</h1>
+        <h1 class="mb-4">Find Recommendations Based on Location!</h1>
         <form id="locationForm" action="/" method="POST">
-            <label for="city">Enter a city (Optional):</label>
-            <input type="text" id="city" name="city" placeholder="Enter a city">
+            <div class="form-group">
+                <label for="city">Enter a city (Optional):</label>
+                <input type="text" class="form-control" id="city" name="city" placeholder="Enter a city" autocomplete="off">
+            </div>
             
+            <div class="form-group">
+                <label for="dateRange">Select Check-in and Check-out Dates:</label>
+                <input type="text" class="form-control" id="dateRange" name="dateRange" placeholder="Select dates" readonly>
+            </div>
+
             <!-- Hidden inputs for latitude and longitude -->
             <input type="hidden" id="latitude" name="latitude">
             <input type="hidden" id="longitude" name="longitude">
 
-            <button type="button" onclick="getLocation()">Use My Location</button>
-            <button type="submit">Get Recommendations</button>
+            <div class="btn-container">
+                <button type="button" class="btn btn-primary" onclick="getLocation()">Use My Location</button>
+                <button type="submit" class="btn btn-success">Get Recommendations</button>
+            </div>
             <div class="loading-spinner" id="loadingSpinner"></div>
             <div class="message" id="errorMessage"></div>
         </form>
     </div>
 
+    
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}&libraries=places&callback=initAutocomplete"
+        async
+        defer></script>
     <script>
+        
+        flatpickr("#dateRange", {
+            mode: "range",
+            dateFormat: "Y-m-d",
+            onClose: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length === 2) {
+                    const checkin = selectedDates[0].toISOString().split('T')[0];
+                    const checkout = selectedDates[1].toISOString().split('T')[0];
+                    document.getElementById('checkin').value = checkin;
+                    document.getElementById('checkout').value = checkout;
+                }
+            }
+        });
+
+        // Initialize Google Places Autocomplete
+        function initAutocomplete() {
+            const input = document.getElementById('city');
+            const autocomplete = new google.maps.places.Autocomplete(input);
+            autocomplete.setFields(['place_id', 'geometry', 'name']);
+            autocomplete.addListener('place_changed', function() {
+                const place = autocomplete.getPlace();
+                if (place.geometry) {
+                    document.getElementById('latitude').value = place.geometry.location.lat();
+                    document.getElementById('longitude').value = place.geometry.location.lng();
+                }
+            });
+        }
+
         function getLocation() {
             const loadingSpinner = document.getElementById('loadingSpinner');
             const errorMessage = document.getElementById('errorMessage');
 
-            // Clear previous messages and show loading spinner
             errorMessage.textContent = '';
             loadingSpinner.style.display = 'block';
 

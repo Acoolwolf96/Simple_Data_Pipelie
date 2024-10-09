@@ -14,6 +14,7 @@ cache = {}
 def configure():
     load_dotenv()
     openai.api_key = os.getenv("openai_api_key")
+    
 
 def get_database_config():
 
@@ -330,42 +331,40 @@ def get_nearby_places_by_coords(latitude, longitude):
 
 #Using AI based suggestion activities
 
-def openai_activities_suggestions(weather_data, nearby_places=[]): 
+def openai_activities_suggestions(weather_data, stay_duration, nearby_places=[]):
     description = weather_data.get('description', '')
     temperature = weather_data.get('temperature', '')
     city = weather_data.get('city', '')
     timezone = weather_data.get('timezone', 0)
     local_time = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(time.time() + timezone))
-    prompt = (f"The local time is {local_time} in the city of {city}, where the weather is {description} " 
-                f"with a temperature of {temperature}°C. Suggest an itinerary for a day in the city. "
-                f"You can list place categories like museum, cafe, park, bar, etc., and sightseeing attractions, "
-                f"medieval places, winery, and food,"
-                f"Also suggest hotels where they can stay")
+    
+    # Adjust the prompt based on the duration of the stay
+    duration_text = f"for {stay_duration} days" if stay_duration else "for today"
+    prompt = (f"The local time is {local_time} in the city of {city}, where the weather is {description} "
+              f"with a temperature of {temperature}°C. Suggest an itinerary based on the weather, time, {duration_text} in the city. "
+              f"You can list place categories like museum, cafe, park, bar, etc., and sightseeing attractions, "
+              f"medieval places, winery and food.")
 
-
-    # print(prompt)
     if nearby_places:
         prompt += f" Here are some nearby places: {', '.join(nearby_places)}."
-    
+
     try:
         response = openai.ChatCompletion.create(
             model='gpt-3.5-turbo',
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
+            messages=[{"role": "user", "content": prompt}],
             max_tokens=100
         )
-        
         return response.choices[0].message['content'].strip()
-    
+
     except openai.error.RateLimitError:
         print('Rate limit exceeded. Waiting before retrying...')
         time.sleep(10)
-        return openai_activities_suggestions(weather_data, nearby_places)
+        return openai_activities_suggestions(weather_data, stay_duration, nearby_places)
     
     except Exception as e:
         print(f'An error occurred: {e}')
         return 'Sorry, I could not retrieve recommendations at the moment'
+
 
 
 
