@@ -160,7 +160,7 @@ def get_nearby_places(location, recommendations, radius=1500):
 
         response = requests.get(url)
         data = response.json()
-        print(f'DATA for: {data}')
+        #print(f'DATA for: {data}') #Debugging
         
         
         if response.status_code != 200:
@@ -424,14 +424,14 @@ def get_geocoding_opencage(city):
     # If not found in cache, make a request to OpenCage
     url = f'https://api.opencagedata.com/geocode/v1/json?q={city}&key={api_key}'
     
-    print(f"Geocoding request URL: {url}")  # Debugging the URL
+    #print(f"Geocoding request URL: {url}")  # Debugging the URL
 
     try:
         response = requests.get(url)
 
         if response.status_code == 200:
             results = response.json()
-            print(f"OpenCage API response: {results}")  # Debugging the response
+            #print(f"OpenCage API response: {results}")  # Debugging the response
             
             if results['results']:
                 location = {

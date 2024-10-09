@@ -18,3 +18,7 @@ EXPOSE 8000
 
 # Command to run the Flask app
 CMD ["gunicorn", "-b", "0.0.0.0:8080", "app.main:app"]
+
+#Run this command if you are running locally(remember to comment(#) line 20)
+#CMD ["python", "main.py"]
+

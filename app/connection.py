@@ -16,7 +16,7 @@ def connect():
             db_version = crsr.fetchone()
             print(f"Database version: {db_version}")
             crsr.close()
-            break  # Exit loop on success
+            break  
 
         except (Exception, psycopg2.DatabaseError) as error:
             print(f"Error connecting to database using database.ini: {error}")
@@ -24,7 +24,7 @@ def connect():
             print(f"Retrying... ({retries} retries left)")
             time.sleep(5)
 
-            if retries == 0:  # After retries, attempt Render connection
+            if retries == 0: #After retries
                 print("Falling back to environment variables (Render)...")
                 try:
                     params = config_render()
@@ -34,11 +34,11 @@ def connect():
                     db_version = crsr.fetchone()
                     print(f"Database version (Render): {db_version}")
                     crsr.close()
-                    break  # Exit loop on success
+                    break  
                 except (Exception, psycopg2.DatabaseError) as render_error:
                     print(f"Error connecting using Render environment variables: {render_error}")
                     time.sleep(5)
-                    break  # No further retries if both failed
+                    break  
 
         finally:
             if connection is not None:
