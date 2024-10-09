@@ -307,7 +307,7 @@ def get_nearby_place_by_city(city, recommendations):
     if location_data:
         latitude = location_data['lat']
         longitude = location_data['lng']
-        print(f"Found coordinates for {city}: {latitude},{longitude}")
+        #print(f"Found coordinates for {city}: {latitude},{longitude}")
         
         nearby_places = get_nearby_places(f'{latitude},{longitude}', recommendations=recommendations)
         # print(f"Nearby places for {city}: {nearby_places}")
