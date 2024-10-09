@@ -15,3 +15,8 @@ OpenCage API: Converts city names into latitude/longitude coordinates and caches
 PostgreSQL: Used to cache geolocation data for cities and store historical weather information.
 weather_data: Stores weather data like temperature, humidity, wind speed, etc.
 geocoding_cache: Stores city names and their latitude/longitude for faster lookup and also reduce request to the API so as not to get blocked or abuse usage
+
+## Images
+![Screenshot (55)](https://github.com/user-attachments/assets/708ef0c8-b580-494a-bd50-6f26ad5cef12)
+![Screenshot (56)](https://github.com/user-attachments/assets/e7ed9eac-0c32-483b-97f5-b24eb426d490)
+![Screenshot (57)](https://github.com/user-attachments/assets/48be7b90-d048-43a6-aaaf-77a6106c7baa)
