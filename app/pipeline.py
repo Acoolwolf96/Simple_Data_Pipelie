@@ -338,7 +338,9 @@ def openai_activities_suggestions(weather_data, nearby_places=[]):
     local_time = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(time.time() + timezone))
     prompt = (f"The local time is {local_time} in the city of {city}, where the weather is {description} " 
                 f"with a temperature of {temperature}°C. Suggest an itinerary for a day in the city. "
-                )
+                f"You can list place categories like museum, cafe, park, bar, etc., and sightseeing attractions, "
+                f"medieval places, winery, and food,"
+                f"Also suggest hotels where they can stay")
 
 
     # print(prompt)
@@ -386,7 +388,8 @@ def map_recommendation_to_types(recommendations):
         'winery': ['bar'],
         'hiking': ['park'],
         'sightseeing': ['tourist_attraction'],
-        'cafe': ['cafe']
+        'cafe': ['cafe'],
+        'hotel': ['hotel']
     }
 
     matched_types = []
