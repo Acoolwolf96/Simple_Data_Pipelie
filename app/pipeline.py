@@ -339,7 +339,8 @@ def openai_activities_suggestions(weather_data, stay_duration, nearby_places=[])
     local_time = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(time.time() + timezone))
     
     # Adjust the prompt based on the duration of the stay
-    duration_text = f'The local time is {local_time} in {city}, and the weather is {description} with a temperature of {temperature}°C. Based on the current weather, time, and {duration_text}, suggest an itinerary for the day, including activities and places to visit."'
+    duration_text = f"for {stay_duration} days" if stay_duration else "for today"
+    prompt =  f'The local time is {local_time} in {city}, and the weather is {description} with a temperature of {temperature}°C. Based on the current weather, time, and {duration_text}, suggest an itinerary for the day, including activities and places to visit."'
 
     if nearby_places:
         prompt += f" Here are some nearby places: {', '.join(nearby_places)}."
