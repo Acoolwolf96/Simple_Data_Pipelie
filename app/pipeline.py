@@ -338,8 +338,7 @@ def openai_activities_suggestions(weather_data, nearby_places=[]):
     local_time = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(time.time() + timezone))
     prompt = (f"The local time is {local_time} in the city of {city}, where the weather is {description} " 
                 f"with a temperature of {temperature}°C. Suggest an itinerary for a day in the city. "
-                f"Please list place categories like museum, cafe, park, bar, etc., and sightseeing attractions, "
-                f"medieval places, winery, and food. Use a simple list format.")
+                )
 
 
     # print(prompt)
