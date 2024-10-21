@@ -72,7 +72,7 @@ def transform(weather):
         wind = weather['wind']
         pressure = weather['pressure']
         description = weather['description']
-        return(city, temperature, humidity, wind, pressure, description)
+        return city, temperature, humidity, wind, pressure, description
     else:
         print("No data to transform")
         return None
